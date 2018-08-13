@@ -14,9 +14,12 @@
     </div>
 </template>
 
-<script>
-    export default {
-        mounted() {
+<script lang="ts">
+    import {Vue, Component} from 'vue-property-decorator';
+
+    @Component
+    export default class ExampleComponent extends Vue {
+        mounted(): void {
             console.log('Component mounted.')
         }
     }
