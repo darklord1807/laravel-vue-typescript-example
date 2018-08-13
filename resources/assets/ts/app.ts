@@ -1,6 +1,6 @@
-import Vue from 'vue';
-import './bootstrap';
-import ExampleComponent from './components/ExampleComponent.vue';
+import './bootstrap'
+import Vue from 'vue'
+import ExampleComponent from './components/ExampleComponent.vue'
 
 new Vue({
     el: '#app',
