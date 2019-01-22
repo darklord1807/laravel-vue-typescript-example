@@ -1,4 +1,5 @@
-let mix = require('laravel-mix');
+const mix = require('laravel-mix');
+const path = require('path');
 
 /*
  |--------------------------------------------------------------------------
@@ -11,5 +12,54 @@ let mix = require('laravel-mix');
  |
  */
 
-mix.ts('resources/assets/ts/app.ts', 'public/js')
-   .sass('resources/assets/sass/app.scss', 'public/css');
+mix.disableSuccessNotifications();
+
+mix
+  .options({
+    processCssUrls: false,
+  })
+  .js('resources/assets/ts/app.ts', 'public/js')
+  .sass('resources/assets/sass/app.scss', 'public/css')
+  .webpackConfig({
+    devtool: mix.inProduction() ? '' : 'inline-source-map',
+    module: {
+      rules: [{
+        test: /\.tsx?$/,
+        loader: 'ts-loader',
+        options: {
+          appendTsSuffixTo: [/\.vue$/],
+        },
+        exclude: /node_modules/,
+      }, {
+        test: /\.(graphql|gql)$/,
+        loader: 'graphql-tag/loader',
+        exclude: /node_modules/,
+      }, {
+        test: /\.pug$/,
+        loader: 'pug-plain-loader'
+      }],
+    },
+    resolve: {
+      extensions: ['*', '.js', '.jsx', '.vue', '.ts', '.tsx'],
+      alias: {
+        styles: path.resolve(__dirname, 'resources/assets/sass'),
+        '@': path.resolve(__dirname, 'resources/assets/ts'),
+      },
+    },
+  });
+
+// Thanks https://github.com/JeffreyWay/laravel-mix/issues/1483#issuecomment-366685986
+Mix.listen('configReady', (webpackConfig) => {
+  if (Mix.isUsing('hmr')) {
+    webpackConfig.entry = Object.keys(webpackConfig.entry).reduce((entries, entry) => {
+      entries[entry.replace(/^\//, '')] = webpackConfig.entry[entry];
+      return entries;
+    }, {});
+
+    webpackConfig.plugins.forEach((plugin) => {
+      if (plugin.constructor.name === 'ExtractTextPlugin') {
+        plugin.filename = plugin.filename.replace(/^\//, '');
+      }
+    });
+  }
+});
